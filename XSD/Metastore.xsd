@@ -1,0 +1,1104 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================
+	WAF - Web/Windows Application Framework
+	Copyright © 2014 The Enticy Group, LLC.
+	NOTES:
+		XSD for validating Metastore.   This version validates both web and client/server MetaStores.
+		This is a superset of the client/server base file (MetastoreBaseCS.xsd).
+		Currently, the only C/S specific items are SHOW_ADD_NEW_ROW and SINGLE_ROW_SELECTION.
+		If we made a MetastoreWeb.xsd, it would be the same as this file, but missing those two items.
+	REVISIONS :
+		2002-06-21	Conrad	Changed *HTML to attributes
+		2002-07-29	Conrad	Split types into separate sections, Added TABLENAVIGATETABLENAME and RESULTNAVIGATETABLENAME
+		2002-08-28	Conrad	Added CONFIRM, CONFIRMTEXT, SHOW_ADD_NEW_FORM, SHOW_ADD_NEW_ROW, and AUTO_EXECUTE
+		2002-10-03	Conrad	Added {RESULT,TABLE}NEW{URL,TABLENAME,FORMNAME} 
+		2003-01-22	Conrad	Added ADD_PARENT_{PF}KEY, FK_JOIN_TO_SELECT_DISPLAY
+		2003-02-18	Conrad	Added FieldTypeFile and FILESAVEPATH
+		2003-03-21	Conrad	Added SELECTEDTAB, ACCESSKEY, TABINDEX, FK_HANDLE*KEY, and FK_*ACCESSKEY
+		2003-04-03	Conrad	Added ALTERNATEDATABASES (used in c/s, but not web).
+		2003-05-31	Conrad	Added DATE_SHOW_CHOICE
+		2003-06-13	Conrad	Added HIDE_HELP_LINK and HIDE_PRINT_LINK
+		2003-06-20	Nachi	Added TOTAL_ON_SEARCH
+		2004-06-02	Nachi	Added HIDE_EMAIL_LINK
+		2004-08-12	Conrad	Added some ids for the Metastore Editor
+		2005-01-03	Conrad	Added localization, Added STRINGS section
+		2005-06-29	Conrad	Added HTMLHIDE_ON_EDIT_FORM, FORMSUBMISSION, and RECORDDISPLAYSTYLE, Removed FORM_EXCLUDE_FORM_TAG
+		2005-07-04	Nachi	Added HTMLHIDE_ON_SEARCH_FORM and SEARCHSUBMISSION, Removed SEARCH_EXCLUDE_FORM_TAG
+		2005-07-06	Conrad	Replaced FK_*HTML with FK_*LABEL and FK_*TITLE, Changed from xsd:id to wmsa:tab and wmsa:label
+		2005-07-14	Conrad	Allowed language specific override of XSLTNAME, Added DEFAULTTYPE and DEFAULT
+		2005-07-25	Conrad	Added ACTIONACTIONType
+		2005-07-27	Conrad	Added FieldDefaultTypeToday and FieldDefaultTypeNow
+		2005-07-28	Conrad	Added RowTitle and RowInstruction, dropped {FORM|SEARCH}SHOW_INSTRUCTION
+		2005-07-29	Conrad	Added SEARCH_REMEMBER_SEARCH_VALUES and ACTION_ADD_RESTORE_SEARCH_VALUES
+		2005-08-02	Conrad	Allowed lots more language override attributes for ACTION.  Allow override of CONNECTIONSTRING.
+		2005-08-02	Conrad	Added EMAIL* attributes, and METASTORELANG element
+		2006-01-06	Conrad	Add FieldTypeXML and FieldTypeBLOB
+		2006-02-06	Conrad	Add FieldTypeNCLOB
+		2006-02-09	Conrad	Added alternate names FieldTypeCLOB, FieldTypeText, and FieldTypeNText
+		2006-02-13	Conrad	Add ACTION.ACCESSKEY, ACTION.TABINDEX, FIELD.COLSPAN, FORM.FOCUSFIELD, and SEARCH.FOCUSFIELD
+		2006-02-17	Conrad	Add FORM.TABINDEX
+		2006-03-04	Conrad	Added EMAILSMTPUSESSL flag
+		2006-09-07	Conrad	Add FORM.DEFAULTMENUACTION and SEARCH.DEFAULTMENUACTION
+		2006-09-14	Conrad	Add SEARCH.SQLCOMMANDTIMEOUT
+		2006-10-09	Conrad	Added APP_{PROBLEM,LOGIN}XSLT
+		2006-12-21	Conrad	Add FIELD.CACHEMINUTES
+		2006-12-22	Conrad	Add FIELD.FK_VALIDATETYPE, *.COMMENT, CACHENAME
+		2007-03-05	Conrad	Add TABLE.ORACLESEQUENCENAME
+		2007-08-09	Conrad	Split out Action definitions to make this work in newer versions of XML Spy
+		2007-08-09	Nachi	Added HasPrivilege
+		2007-09-07	Conrad	Added HTML_VIEW_IN_IFRAME flag
+		2009-03-23	Roopa	Added CSVURL and SHOW_CSV_LINK to SEARCH and FORM
+		2009-05-06	Conrad	Added HTML/XMLGENERATORSERVER to TABLE
+		2009-10-14	Roopa	Added keys and table collapse state
+		2014-07-02	Conrad	Added TABLESHOWCOUNT
+===================================================================== -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	    xmlns:wmsa="http://enticy.com/WAF/MetastoreSchemaAnnotations/1.0" 
+	    xmlns="http://enticy.com/WAF/Metastore/1.0" 
+	    elementFormDefault="qualified"
+	    targetNamespace="http://enticy.com/WAF/Metastore/1.0">
+
+	<xsd:element name="METASTORE">
+		<xsd:annotation>
+			<xsd:documentation>Main Metastore element</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="METASTORELANG" type="METASTORELANGType" minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element name="ALTERNATEDATABASES" type="ALTERNATEDATABASESType" minOccurs="0"/>
+				<xsd:element name="INCLUDE" type="INCLUDEType" minOccurs="0" maxOccurs="unbounded"/>
+				<xsd:element name="TABLE" type="TABLEType" minOccurs="0" maxOccurs="unbounded">
+					<!-- Keys defined for uniqueness. Need to look into xsd:unique. -->
+					<xsd:key name="TableFormKey">
+						<xsd:selector xpath="FORM" />
+						<xsd:field xpath="@NAME"/>
+					</xsd:key>
+					<xsd:key name="TableSearchKey">
+						<xsd:selector xpath="SEARCH" />
+						<xsd:field xpath="@NAME"/>
+					</xsd:key>
+					<xsd:key name="TableFieldKey">
+						<xsd:selector xpath="FIELD" />
+						<xsd:field xpath="@NAME"/>
+					</xsd:key>
+					<xsd:key name="TableActionKey">
+						<xsd:selector xpath="ACTION" />
+						<xsd:field xpath="@NAME"/>
+					</xsd:key>
+				</xsd:element>
+				<xsd:element name="STRINGS" type="STRINGSType" minOccurs="0"/>
+				<xsd:element name="SYSTEMSTRINGS" type="SYSTEMSTRINGSType" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:attribute name="APPLICATION_NAME" type="xsd:string" wmsa:label="Application name"/>
+			<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment">
+				<xsd:annotation>
+					<xsd:documentation>Human readable comment, not used in application.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="APP_PROBLEMXSLT" type="xsd:string" wmsa:label="Problem XSLT"/>
+			<xsd:attribute name="APP_LOGINXSLT" type="xsd:string" wmsa:label="Login XSLT"/>
+			<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+			<xsd:attribute name="EMAILFROMHOST" type="xsd:string" wmsa:label="Email From hostname"/>
+			<xsd:attribute name="EMAILSMTPSERVER" type="xsd:string" wmsa:label="Email SMTP server"/>
+			<xsd:attribute name="EMAILSMTPPORT" type="xsd:integer" wmsa:label="Email SMTP port"/>
+			<xsd:attribute name="EMAILSMTPAUTHTYPE" type="EMAILSMTPAUTHTYPEType" wmsa:label="Email SMTP authentication type">
+				<xsd:annotation>
+					<xsd:documentation>The SMTP authentication type to use to connect to the SMTP server from which email messages are sent. This is used when a user uses the system to send a page by email.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="EMAILSMTPUSER" type="xsd:string" wmsa:label="Email SMTP user">
+				<xsd:annotation>
+					<xsd:documentation>The SMTP user name to use to connect to the SMTP server from which email messages are sent. This is used when a user uses the system to send a page by email.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="EMAILSMTPPASSWORD" type="xsd:string" wmsa:label="Email SMTP password"/>
+			<xsd:attribute name="EMAILSMTPUSESSL" type="xsd:boolean" wmsa:label="Email SMTP use SSL"/>
+			<xsd:attribute name="BUSINESSRULESSERVER" type="xsd:string" wmsa:label="Default business rules server for all forms"/>
+			<xsd:attribute name="SEARCHRULESSERVER" type="xsd:string" wmsa:label="Default search rules server for all searches"/>
+			<xsd:attribute name="HTMLGENERATORSERVER" type="xsd:string" wmsa:label="Default HTML generator server for all forms and searches"/>
+			<xsd:attribute name="XMLGENERATORSERVER" type="xsd:string" wmsa:label="Default XML generator server for all forms and searches"/>
+			<xsd:anyAttribute/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:complexType name="METASTORELANGType">
+		<xsd:attribute name="LOCALE" type="xsd:string" use="required" wmsa:label="Locale"/>
+		<xsd:attribute name="APPLICATION_NAME" type="xsd:string" wmsa:label="Application name"/>
+		<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+		<xsd:attribute name="EMAILSMTPSERVER" type="xsd:string" wmsa:label="Email SMTP server"/>
+		<xsd:attribute name="EMAILFROMHOST" type="xsd:string" wmsa:label="Email From hostname"/>
+	</xsd:complexType>
+	<xsd:complexType name="ALTERNATEDATABASESType">
+		<xsd:sequence>
+			<xsd:element name="DATABASE" type="DATABASEType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="DATABASEType">
+		<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+		<xsd:attribute name="DESCRIPTION" type="xsd:string" wmsa:label="Description"/>
+	</xsd:complexType>
+	<xsd:complexType name="INCLUDEType">
+		<xsd:attribute name="FILENAME" type="xsd:string" use="required" wmsa:label="File name"/>
+	</xsd:complexType>
+	<!-- Defines possible values of EMAILSMTPAUTHTYPE) -->
+	<xsd:simpleType name="EMAILSMTPAUTHTYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="None">
+				<xsd:annotation>
+					<xsd:documentation>No SMTP authentication</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Basic">
+				<xsd:annotation>
+					<xsd:documentation>Basic (text) SMTP authentication.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="NTLM">
+				<xsd:annotation>
+					<xsd:documentation>NTLM (NT Lan Manager) SMTP authentication</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines STRINGS -->
+	<xsd:complexType name="STRINGSType">
+		<xsd:sequence>
+			<xsd:element name="STRING" type="STRINGType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="STRINGType">
+		<xsd:sequence>
+			<xsd:element name="STRINGLANG" type="STRINGLANGType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="NAME" type="xsd:string" use="required" wmsa:label="Name"/>
+		<xsd:attribute name="VALUE" type="xsd:string" wmsa:label="Value"/>
+	</xsd:complexType>
+	<xsd:complexType name="STRINGLANGType">
+		<xsd:attribute name="LOCALE" type="xsd:string" use="required" wmsa:label="Locale"/>
+		<xsd:attribute name="VALUE" type="xsd:string" wmsa:label="Value"/>
+	</xsd:complexType>
+	<!-- Defines SYSTEMSTRINGS -->
+	<xsd:complexType name="SYSTEMSTRINGSType">
+		<xsd:sequence>
+			<xsd:element name="SYSTEMSTRING" type="SYSTEMSTRINGType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="SYSTEMSTRINGType">
+		<xsd:sequence>
+			<xsd:element name="SYSTEMSTRINGLANG" type="SYSTEMSTRINGLANGType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="NAME" type="xsd:string" use="required" wmsa:label="Name"/>
+		<xsd:attribute name="VALUE" type="xsd:string" wmsa:label="Value"/>
+	</xsd:complexType>
+	<xsd:complexType name="SYSTEMSTRINGLANGType">
+		<xsd:attribute name="LOCALE" type="xsd:string" use="required" wmsa:label="Locale"/>
+		<xsd:attribute name="VALUE" type="xsd:string" wmsa:label="Value"/>
+	</xsd:complexType>
+	<!-- Defines an ACTION -->
+	<xsd:complexType name="ACTIONType">
+		<xsd:sequence>
+			<xsd:element name="ACTIONLANG" type="ACTIONLANGType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SECURITY" type="ACTIONSECURITYType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="NAME" type="xsd:string" use="required" wmsa:label="Name"/>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="LABEL" type="xsd:string" wmsa:label="Label"/>
+		<xsd:attribute name="TITLE" type="xsd:string" wmsa:label="Title"/>
+		<xsd:attribute name="DESCRIPTION" type="xsd:string" wmsa:label="Description"/>
+		<xsd:attribute name="URL" type="xsd:string" wmsa:tab="Web" wmsa:label="URL"/>
+		<xsd:attribute name="PAGE" type="xsd:string" wmsa:tab="Web" wmsa:label="Page"/>
+		<xsd:attribute name="ACTION" type="ACTIONACTIONType" wmsa:tab="Web" wmsa:label="Action"/>
+		<xsd:attribute name="TABLENAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Table name"/>
+		<xsd:attribute name="FORMNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Form name"/>
+		<xsd:attribute name="SEARCHNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Search name"/>
+		<xsd:attribute name="REPORTNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Report name"/>
+		<xsd:attribute name="CONTENT" type="xsd:string" wmsa:tab="Web" wmsa:label="Content to display"/>
+		<xsd:attribute name="FIELDNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Field name"/>
+		<xsd:attribute name="NEXTACTIONNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Next action name"/>
+		<xsd:attribute name="EXECACTIONNAME" type="xsd:string" wmsa:label="Execute action name"/>
+		<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+		<xsd:attribute name="ADD_PKEY" type="xsd:boolean" wmsa:label="Add primary key as primary key?"/>
+		<xsd:attribute name="ADD_FKEY" type="xsd:boolean" wmsa:label="Add primary key as foreign key?"/>
+		<xsd:attribute name="ADD_PARENT_PKEY" type="xsd:boolean" wmsa:label="Add parent key as primary key?"/>
+		<xsd:attribute name="ADD_PARENT_FKEY" type="xsd:boolean" wmsa:label="Add parent key as foreign key?"/>
+		<xsd:attribute name="SUBMIT_EDIT_FORM" type="xsd:boolean" wmsa:tab="Web" wmsa:label="Submit edit form?"/>
+		<xsd:attribute name="SUBMIT_SEARCH_FORM" type="xsd:boolean" wmsa:tab="Web" wmsa:label="Submit search form?"/>
+		<xsd:attribute name="SUBMIT_SEARCH_RESULTS" type="xsd:boolean" wmsa:tab="Web" wmsa:label="Submit search results?"/>
+		<xsd:attribute name="ADD_RESTORE_SEARCH_VALUES" type="xsd:boolean" wmsa:tab="Web" wmsa:label="Restore search values?"/>
+		<xsd:attribute name="ADD_SEARCH_CRITERIA" type="xsd:boolean" wmsa:tab="Web" wmsa:label="Add search criteria onto URL?"/>
+		<xsd:attribute name="USE_IMAGE" type="xsd:boolean" wmsa:label="Use image?"/>
+		<xsd:attribute name="USE_DATABASE" type="xsd:boolean" wmsa:label="Use database?"/>
+		<xsd:attribute name="DIVIDER" type="xsd:boolean" wmsa:label="Is divider?"/>
+		<xsd:attribute name="TARGET_NEW" type="xsd:boolean" wmsa:tab="Web" wmsa:label="Target is new window?"/>
+		<xsd:attribute name="TARGET_POPUP" type="xsd:boolean" wmsa:tab="Web" wmsa:label="Target is popup?"/>
+		<xsd:attribute name="USE_URL_AS_IS" type="xsd:boolean" wmsa:tab="Web" wmsa:label="Use URL as is?"/>
+		<xsd:attribute name="CONFIRM" type="xsd:boolean" wmsa:label="Confirm?"/>
+		<xsd:attribute name="CONFIRMTEXT" type="xsd:string" wmsa:label="Confirm text"/>
+		<xsd:attribute name="SECURECONNECTION" type="SECURECONNECTIONType" wmsa:label="Secure (SSL) connection type"/>
+		<xsd:attribute name="ACCESSKEY" type="ACCESSKEYType" wmsa:tab="Web" wmsa:label="Access key"/>
+		<xsd:attribute name="TABINDEX" type="TABINDEXType" wmsa:tab="Web" wmsa:label="Tab index"/>
+	</xsd:complexType>
+	<xsd:complexType name="ACTIONLANGType">
+		<xsd:attribute name="LOCALE" type="xsd:string" use="required" wmsa:label="Locale"/>
+		<xsd:attribute name="LABEL" type="xsd:string" wmsa:label="Label"/>
+		<xsd:attribute name="TITLE" type="xsd:string" wmsa:label="Title"/>
+		<xsd:attribute name="DESCRIPTION" type="xsd:string" wmsa:label="Description"/>
+		<xsd:attribute name="URL" type="xsd:string" wmsa:label="URL"/>
+		<xsd:attribute name="PAGE" type="xsd:string" wmsa:tab="Web" wmsa:label="Page"/>
+		<xsd:attribute name="ACTION" type="ACTIONACTIONType" wmsa:tab="Web" wmsa:label="Action"/>
+		<xsd:attribute name="TABLENAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Table name"/>
+		<xsd:attribute name="FORMNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Form name"/>
+		<xsd:attribute name="SEARCHNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Search name"/>
+		<xsd:attribute name="REPORTNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Report name"/>
+		<xsd:attribute name="CONTENT" type="xsd:string" wmsa:tab="Web" wmsa:label="Content to display"/>
+		<xsd:attribute name="FIELDNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Field name"/>
+		<xsd:attribute name="NEXTACTIONNAME" type="xsd:string" wmsa:tab="Web" wmsa:label="Next action name"/>
+		<xsd:attribute name="EXECACTIONNAME" type="xsd:string" wmsa:label="Execute action name"/>
+		<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+		<xsd:attribute name="CONFIRMTEXT" type="xsd:string" wmsa:label="Confirm text"/>
+		<xsd:attribute name="ACCESSKEY" type="ACCESSKEYType" wmsa:label="Access key"/>
+		<xsd:attribute name="TABINDEX" type="TABINDEXType" wmsa:label="Tab index"/>
+	</xsd:complexType>
+	<!-- Defines a FIELD -->
+	<xsd:complexType name="FIELDType">
+		<xsd:sequence>
+			<xsd:element name="FIELDLANG" type="FIELDLANGType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SECURITY" type="FIELDSECURITYType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="NAME" type="xsd:string" use="required" wmsa:label="Name"/>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="LABEL" type="xsd:string" wmsa:label="Label"/>
+		<xsd:attribute name="INSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Instruction"/>
+		<xsd:attribute name="READONLYINSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Instruction when read-only"/>
+		<xsd:attribute name="FORMATCHOICE" type="xsd:string" wmsa:label="Format choice"/>
+		<xsd:attribute name="WIDTH" type="xsd:positiveInteger" wmsa:label="Width"/>
+		<xsd:attribute name="DISPLAYHEIGHT" type="xsd:positiveInteger" wmsa:label="Display height"/>
+		<xsd:attribute name="DISPLAYWIDTH" type="xsd:positiveInteger" wmsa:label="Display width"/>
+		<xsd:attribute name="DBCOLUMNNAME" type="xsd:string" wmsa:label="DB column name"/>
+		<xsd:attribute name="FIELDTYPE" type="FIELDTYPEType" wmsa:label="Field type"/>
+		<xsd:attribute name="ACCESSKEY" type="ACCESSKEYType" wmsa:label="Access key"/>
+		<xsd:attribute name="TABINDEX" type="TABINDEXType" wmsa:label="Tab index"/>
+		<xsd:attribute name="COLSPAN" type="xsd:positiveInteger" wmsa:label="Columns spanned"/>
+		<xsd:attribute name="FK_TABLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey table"/>
+		<xsd:attribute name="FK_DBTABLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey database table"/>
+		<xsd:attribute name="FK_DBTABLETYPE" type="DBTABLETYPEType" wmsa:tab="Foreign key" wmsa:label="FKey database table type"/>
+		<xsd:attribute name="FK_PRIMARYKEYCOLNAME" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey primary key column name"/>
+		<xsd:attribute name="FK_PRIMARYVALUECOLNAME" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey primary value column name"/>
+		<xsd:attribute name="FK_ALTERNATEJOIN" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey alternate join"/>
+		<xsd:attribute name="FK_ADDITIONALWHERECLAUSE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey additional where clause"/>
+		<xsd:attribute name="FK_ORDERCLAUSE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey order clause"/>
+		<xsd:attribute name="FK_DISPLAYFORM" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey display form"/>
+		<xsd:attribute name="FK_VALIDATETYPE" type="FKVALIDATETYPEType" wmsa:tab="Foreign key" wmsa:label="FKey validate type"/>
+		<xsd:attribute name="FK_NAVIGATELABEL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey navigate label"/>
+		<xsd:attribute name="FK_NAVIGATETITLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey navigate title"/>
+		<xsd:attribute name="FK_NAVIGATEURL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey navigate URL"/>
+		<xsd:attribute name="FK_NAVIGATETABLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey navigate table"/>
+		<xsd:attribute name="FK_NAVIGATEFORM" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey navigate form"/>
+		<xsd:attribute name="FK_NAVIGATEACCESSKEY" type="ACCESSKEYType" wmsa:tab="Foreign key" wmsa:label="FKey navigate access key"/>
+		<xsd:attribute name="FK_CHOICELABEL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey choice label"/>
+		<xsd:attribute name="FK_CHOICETITLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey choice title"/>
+		<xsd:attribute name="FK_CHOICEURL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey choice URL"/>
+		<xsd:attribute name="FK_CHOICETABLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey choice table"/>
+		<xsd:attribute name="FK_CHOICESEARCH" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey choice search"/>
+		<xsd:attribute name="FK_CHOICEACCESSKEY" type="ACCESSKEYType" wmsa:tab="Foreign key" wmsa:label="FKey choice access key"/>
+		<xsd:attribute name="FK_NEWLABEL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey new label"/>
+		<xsd:attribute name="FK_NEWTITLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey new title"/>
+		<xsd:attribute name="FK_NEWURL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey new URL"/>
+		<xsd:attribute name="FK_NEWTABLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey new table"/>
+		<xsd:attribute name="FK_NEWFORM" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey new form"/>
+		<xsd:attribute name="FK_NEWACCESSKEY" type="ACCESSKEYType" wmsa:tab="Foreign key" wmsa:label="FKey new access key"/>
+		<xsd:attribute name="FK_SUGGESTSEARCH" type="xsd:string" wmsa:tab="Foreign Key" wmsa:label="FKey suggest Search" />
+		<xsd:attribute name="FK_SUGGESTURL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey suggest URL" />
+		<xsd:attribute name="VALIDVALUESTYPE" type="VALIDVALUESTYPEType" wmsa:tab="Valid values" wmsa:label="Valid values type"/>
+		<xsd:attribute name="VALIDVALUES" type="xsd:string" wmsa:tab="Valid values" wmsa:height="4" wmsa:label="Valid values"/>
+		<xsd:attribute name="DEFAULTTYPE" type="DEFAULTTYPEType" wmsa:tab="Default" wmsa:label="Default type"/>
+		<xsd:attribute name="DEFAULT" type="xsd:string" wmsa:tab="Default" wmsa:label="Default"/>
+		<xsd:attribute name="BLANKOPTIONTEXT" type="xsd:string" wmsa:label="Blank option text"/>
+		<xsd:attribute name="SEARCHTYPE" type="SEARCHTYPEType" wmsa:label="Search type"/>
+		<xsd:attribute name="SEARCHINSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Search instruction"/>
+		<xsd:attribute name="FIELDVALIDATIONSERVER" type="xsd:string" wmsa:label="Field validation server"/>
+		<xsd:attribute name="SEARCHFIELDVALIDATIONSERVER" type="xsd:string" wmsa:label="Search field validation server"/>
+		<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+		<xsd:attribute name="REQUIRED" type="xsd:boolean" wmsa:label="Required?"/>
+		<xsd:attribute name="REQUIRED_SEARCH" type="xsd:boolean" wmsa:label="Required when on a search?"/>
+		<xsd:attribute name="READONLY" type="xsd:boolean" wmsa:label="Readonly?"/>
+		<xsd:attribute name="FK_DISPLAY_AS_LIST" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey display as list?"/>
+		<xsd:attribute name="FK_DISPLAY_AS_FORM" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey display as form?"/>
+		<xsd:attribute name="FK_SHOW_NAVIGATE" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey show navigate?"/>
+		<xsd:attribute name="FK_SHOW_CHOICE" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey show choice?"/>
+		<xsd:attribute name="FK_SHOW_CHOICE_ON_SEARCH" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey show choice when on search?"/>
+		<xsd:attribute name="FK_SHOW_NEW" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey show new?"/>
+		<xsd:attribute name="FK_AUTOCOMPLETE" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey autocomplete?"/>
+		<xsd:attribute name="FK_HANDLECHOICEKEY" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey handle choice key?"/>
+		<xsd:attribute name="FK_HANDLENEWKEY" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey handle new key?"/>
+		<xsd:attribute name="FK_HANDLENAVIGATEKEY" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey handle navigate key?"/>
+		<xsd:attribute name="FK_JOIN_TO_SELECT_DISPLAY" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey join to select display?"/>
+		<xsd:attribute name="FK_SUGGEST" type="xsd:boolean" wmsa:tab="Foreign key" wmsa:label="FKey Suggest?" />
+		<xsd:attribute name="DATE_SHOW_CHOICE" type="xsd:boolean" wmsa:tab="Date" wmsa:label="Date show choice?"/>
+		<xsd:attribute name="SHOW_INSTRUCTION" type="xsd:boolean" wmsa:label="Show instruction?"/>
+		<xsd:attribute name="DISABLE_AUTOCOMPLETE" type="xsd:boolean" wmsa:label="Disables autocomplete in browser"/>
+		<xsd:attribute name="USE_FOR_CONCURRENCY" type="xsd:boolean" wmsa:label="Use for concurrency?"/>
+		<xsd:attribute name="VVALUE_DISPLAY_OPTIONS" type="xsd:boolean" wmsa:tab="Valid values" wmsa:label="Valid value display as options?"/>
+		<xsd:attribute name="VVALUE_ALLOW_ENTRY" type="xsd:boolean" wmsa:tab="Valid values" wmsa:label="Valid value allow entry?"/>
+		<xsd:attribute name="VVALUE_VALIDATE_IN_LIST" type="xsd:boolean" wmsa:tab="Valid values" wmsa:label="Valid value validate entry is in option list?"/>
+		<xsd:attribute name="HIDE_ON_EDIT_FORM" type="xsd:boolean" wmsa:label="Hide (put in hidden section) on edit form?"/>
+		<xsd:attribute name="HTMLHIDE_ON_EDIT_FORM" type="xsd:boolean" wmsa:label="Hide (put in HTML hidden input) on edit form?"/>
+		<xsd:attribute name="HIDE_ON_SEARCH_FORM" type="xsd:boolean" wmsa:label="Hide (put in hidden section) on search form?"/>
+		<xsd:attribute name="HTMLHIDE_ON_SEARCH_FORM" type="xsd:boolean" wmsa:label="Hide (put in HTML hidden input) on search form?"/>
+		<xsd:attribute name="EXCLUDE_ON_EDIT_FORM" type="xsd:boolean" wmsa:label="Exclude from edit form?"/>
+		<xsd:attribute name="EXCLUDE_ON_SEARCH_FORM" type="xsd:boolean" wmsa:label="Exclude from search form?"/>
+		<xsd:attribute name="EXCLUDE_ON_SEARCH_RESULTS" type="xsd:boolean" wmsa:label="Exclude from search results?"/>
+		<xsd:attribute name="EXCLUDE_ON_SEARCH_WHERE" type="xsd:boolean" wmsa:label="Exclude from search where clause?"/>
+		<xsd:attribute name="SHOW_ON_FILTER_SEARCH_FORM" type="xsd:boolean" wmsa:label="Show on filter search form?"/>
+		<xsd:attribute name="REDISPLAY_ON_OPTION_CHANGE" type="xsd:boolean" wmsa:label="Redisplay on option change?"/>
+		<xsd:attribute name="BOOLEAN_DISPLAY_OPTIONS" type="xsd:boolean" wmsa:tab="Boolean" wmsa:label="Show boolean as options?"/>
+		<xsd:attribute name="SEARCH_USING_UPPER_CASE" type="xsd:boolean" wmsa:label="Search using upper case?"/>
+		<xsd:attribute name="DISALLOW_NEGATIVES" type="xsd:boolean" wmsa:tab="Numeric" wmsa:label="Disallow negatives?"/>
+		<xsd:attribute name="DISALLOW_ZERO" type="xsd:boolean" wmsa:tab="Numeric" wmsa:label="Disallow zero?"/>
+		<xsd:attribute name="TOTAL_ON_SEARCH" type="xsd:boolean" wmsa:label="Total on search?"/>
+		<xsd:attribute name="ALTERNATESORTCOLUMNNAME" type="xsd:string" wmsa:label="Alternate sort column name"/>
+		<xsd:attribute name="FIELDSOURCE" type="FIELDSOURCETARGETType" wmsa:label="Field source"/>
+		<xsd:attribute name="FIELDTARGET" type="FIELDSOURCETARGETType" wmsa:label="Field target"/>
+		<xsd:attribute name="VALUE" type="xsd:string" wmsa:label="Value"/>
+		<xsd:attribute name="ATTRIBUTENAME" type="xsd:string" wmsa:label="Attribute name"/>
+		<xsd:attribute name="FILESAVEPATH" type="xsd:string" wmsa:tab="File" wmsa:label="Save path"/>
+		<xsd:attribute name="FILEACCESSKEY" type="ACCESSKEYType" wmsa:tab="File" wmsa:label="File access key"/>
+		<xsd:attribute name="FILESERVER" type="xsd:string" wmsa:tab="File" wmsa:label="File field server"/>
+		<xsd:attribute name="HTML_EDIT_AS_RICH_TEXT" type="xsd:boolean" wmsa:label="Edit HTML using rich text?"/>
+		<xsd:attribute name="HTML_VIEW_IN_IFRAME" type="xsd:boolean" wmsa:label="View readonly HTML in an IFRAME?"/>
+		<xsd:attribute name="HTML_READONLY" type="xsd:boolean" wmsa:label="Make field readonly in CSS/HTML?"/>
+		<xsd:attribute name="REGULAREXPRESSION" type="xsd:string" wmsa:label="Validation regular expression"/>
+		<xsd:attribute name="REGULAREXPRESSIONREPLACEMENT" type="xsd:string" wmsa:label="Regular expression replacement"/>
+		<xsd:attribute name="REGULAREXPRESSIONERRORTEXT" type="xsd:string" wmsa:label="Regular expression error text"/>
+		<xsd:attribute name="REQUIREDERRORTEXT" type="xsd:string" wmsa:label="Required error text"/>
+		<xsd:attribute name="CACHEMINUTES" type="CACHEMINUTESType" wmsa:label="Minutes to cache option values"/>
+		<xsd:attribute name="CACHENAME" type="xsd:string" wmsa:label="Name of cached option values"/>
+		<xsd:attribute name="CLIENTREGULAREEXPRESSION" type="xsd:string" wmsa:label="Client validation regular expression">
+			<xsd:annotation>
+				<xsd:documentation>A regular expression string for validating this field on the client.  Defaults to the value of the REGULAREXPRESSION attribute and is only necessary to override the REGULAREXPRESSION flag.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="FIELDLANGType">
+		<xsd:attribute name="LOCALE" type="xsd:string" use="required" wmsa:label="Locale"/>
+		<xsd:attribute name="LABEL" type="xsd:string" wmsa:label="Label"/>
+		<xsd:attribute name="INSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Instruction"/>
+		<xsd:attribute name="FORMATCHOICE" type="xsd:string" wmsa:label="Format choice"/>
+		<xsd:attribute name="DBCOLUMNNAME" type="xsd:string" wmsa:label="DB column name"/>
+		<xsd:attribute name="ACCESSKEY" type="ACCESSKEYType" wmsa:label="Access key"/>
+		<xsd:attribute name="TABINDEX" type="TABINDEXType" wmsa:label="Tab index"/>
+		<xsd:attribute name="FK_NAVIGATELABEL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey navigate label"/>
+		<xsd:attribute name="FK_NAVIGATETITLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey navigate title"/>
+		<xsd:attribute name="FK_NAVIGATEACCESSKEY" type="ACCESSKEYType" wmsa:tab="Foreign key" wmsa:label="FKey navigate access key"/>
+		<xsd:attribute name="FK_CHOICELABEL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey choice label"/>
+		<xsd:attribute name="FK_CHOICETITLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey choice title"/>
+		<xsd:attribute name="FK_CHOICEACCESSKEY" type="ACCESSKEYType" wmsa:tab="Foreign key" wmsa:label="FKey choice access key"/>
+		<xsd:attribute name="FK_NEWLABEL" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey new label"/>
+		<xsd:attribute name="FK_NEWTITLE" type="xsd:string" wmsa:tab="Foreign key" wmsa:label="FKey new title"/>
+		<xsd:attribute name="FK_NEWACCESSKEY" type="ACCESSKEYType" wmsa:tab="Foreign key" wmsa:label="FKey new access key"/>
+		<xsd:attribute name="VALIDVALUES" type="xsd:string" wmsa:tab="Valid values" wmsa:height="4" wmsa:label="Valid values"/>
+		<xsd:attribute name="DEFAULT" type="xsd:string" wmsa:tab="Default" wmsa:label="Default"/>
+		<xsd:attribute name="BLANKOPTIONTEXT" type="xsd:string" wmsa:label="Blank option text"/>
+		<xsd:attribute name="SEARCHINSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Search instruction"/>
+		<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+		<xsd:attribute name="VALUE" type="xsd:string" wmsa:label="Value"/>
+		<xsd:attribute name="FILEACCESSKEY" type="ACCESSKEYType" wmsa:tab="File" wmsa:label="File access key"/>
+		<xsd:attribute name="REGULAREXPRESSIONERRORTEXT" type="xsd:string" wmsa:label="Regular expression error text"/>
+		<xsd:attribute name="REQUIREDERRORTEXT" type="xsd:string" wmsa:label="Required error text"/>
+	</xsd:complexType>
+	<!-- Defines a FORM -->
+	<xsd:complexType name="FORMType">
+		<xsd:sequence>
+			<xsd:element name="FORMLANG" type="FORMLANGType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SECURITY" type="FORMSECURITYType" maxOccurs="unbounded"/>
+			<xsd:element name="FORMFIELD" type="FIELDType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="FORMMENUACTION" type="ACTIONType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="FORMROWACTION" type="ACTIONType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="FORMTABACTION" type="ACTIONType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="LINKEDFORM" type="LINKEDFORMType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="NAME" type="xsd:string" use="required" wmsa:label="Name"/>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="TITLE" type="xsd:string" wmsa:label="Title"/>
+		<xsd:attribute name="ROWTITLE" type="xsd:string" wmsa:label="Row title"/>
+		<xsd:attribute name="INSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Instruction"/>
+		<xsd:attribute name="ROWINSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Row instruction"/>
+		<xsd:attribute name="GRIDCOLUMNS" type="xsd:positiveInteger" wmsa:label="Grid columns"/>
+		<xsd:attribute name="TABLEMINROWS" type="xsd:nonNegativeInteger" wmsa:tab="Child table" wmsa:label="Table minimum rows"/>
+		<xsd:attribute name="TABLEMINEMPTYROWS" type="xsd:nonNegativeInteger" wmsa:tab="Child table" wmsa:label="Table minimum empty rows"/>
+		<xsd:attribute name="TABLEMAXROWS" type="xsd:nonNegativeInteger" wmsa:tab="Child table" wmsa:label="Table maximum rows"/>
+		<xsd:attribute name="EDITSUBMITURL" type="xsd:string" wmsa:label="Edit submit URL"/>
+		<xsd:attribute name="TABLESUBMITURL" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table submit URL"/>
+		<xsd:attribute name="EMAILURL" type="xsd:string" wmsa:label="Email URL"/>
+		<xsd:attribute name="PRINTURL" type="xsd:string" wmsa:label="Print URL"/>
+		<xsd:attribute name="HELPURL" type="xsd:string" wmsa:label="Help URL"/>
+		<xsd:attribute name="CSVURL" type="xsd:string" wmsa:label="CSV URL"/>
+		<xsd:attribute name="XSLTNAME" type="xsd:string" wmsa:label="XSLT name"/>
+		<xsd:attribute name="TABINDEX" type="TABINDEXType" wmsa:label="Tab index for all items"/>
+		<xsd:attribute name="HTMLGENERATORSERVER" type="xsd:string" wmsa:label="HTML generator server"/>
+		<xsd:attribute name="XMLGENERATORSERVER" type="xsd:string" wmsa:label="XML generator server"/>
+		<xsd:attribute name="TABLENAVIGATECOLNAME" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table navigate column name"/>
+		<xsd:attribute name="TABLEACTION" type="TABLEACTIONType" wmsa:tab="Child table" wmsa:label="Table action"/>
+		<xsd:attribute name="TABLENAVIGATEURL" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table navigate URL"/>
+		<xsd:attribute name="TABLENAVIGATETABLE" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table navigate table"/>
+		<xsd:attribute name="TABLENAVIGATEFORM" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table navigate form"/>
+		<xsd:attribute name="TABLENEWURL" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table new URL"/>
+		<xsd:attribute name="TABLENEWTABLE" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table new table"/>
+		<xsd:attribute name="TABLECOLLAPSESTATE" type="TABLECOLLAPSESTATEType" wmsa:label="Table display state" />
+		<xsd:attribute name="TABLENEWFORM" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table new form"/>
+		<xsd:attribute name="SHOW_TABLE_COUNT" type="xsd:boolean" wmsa:tab="Child table" wmsa:label="Table show count?"/>
+		<xsd:attribute name="WHERECLAUSE" type="xsd:string" wmsa:tab="Child table" wmsa:label="Where clause"/>
+		<xsd:attribute name="ORDERCLAUSE" type="xsd:string" wmsa:tab="Child table" wmsa:label="Order clause"/>
+		<xsd:attribute name="BUSINESSRULESSERVER" type="xsd:string" wmsa:label="Business rules server"/>
+		<xsd:attribute name="EDITACTIONBARHTML" type="xsd:string" wmsa:height="4" wmsa:label="Edit action bar HTML"/>
+		<xsd:attribute name="TABLEACTIONBARHTML" type="xsd:string" wmsa:height="4" wmsa:tab="Child table" wmsa:label="Table action bar HTML"/>
+		<xsd:attribute name="CUSTOMACTIONHTML" type="xsd:string" wmsa:height="4" wmsa:label="Custom action HTML"/>
+		<xsd:attribute name="ATTACHMENT" type="xsd:boolean" wmsa:label="Attachment?"/>
+		<xsd:attribute name="READONLY" type="xsd:boolean" wmsa:label="Readonly?"/>
+		<xsd:attribute name="SHOW_ACTIONS_MENU_TOP" type="xsd:boolean" wmsa:label="Show actions menu on top?"/>
+		<xsd:attribute name="SHOW_ACTIONS_MENU_BOTTOM" type="xsd:boolean" wmsa:label="Show actions menu on bottom?"/>
+		<xsd:attribute name="SHOW_ACTIONS_TAB" type="xsd:boolean" wmsa:label="Show actions tab?"/>
+		<xsd:attribute name="SHOW_ON_TOP" type="xsd:boolean" wmsa:label="Show on top?"/>
+		<xsd:attribute name="SHOW_ON_BOTTOM" type="xsd:boolean" wmsa:label="Show on bottom?"/>
+		<xsd:attribute name="SHOW_DISPLAYVALUE_ON_ROWTITLE" type="xsd:boolean" wmsa:label="Show display value on row title?"/>
+		<xsd:attribute name="SHOW_SORT_COLUMNS" type="xsd:boolean" wmsa:label="Table is sortable?"/>
+		<xsd:attribute name="HIDE_EMPTY_LINKED_RECORD" type="xsd:boolean" wmsa:tab="Child table" wmsa:label="Hide empty linked record?"/>
+		<xsd:attribute name="TABLEEMPTYMESSAGE" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table empty message?"/>
+		<xsd:attribute name="EXCLUDE_COLUMNS_TITLES" type="xsd:boolean" wmsa:tab="Child table" wmsa:label="Exclude column titles?"/>
+		<xsd:attribute name="EXCLUDE_COLUMNS_TITLES_WHEN_EMPTY" type="xsd:boolean" wmsa:tab="Child table" wmsa:label="Exclude column titles when empty?"/>
+		<xsd:attribute name="SHOW_REQUIRED_INSTRUCTION_TOP" type="xsd:boolean" wmsa:label="Show required instruction on top?"/>
+		<xsd:attribute name="SHOW_REQUIRED_INSTRUCTION_BOTTOM" type="xsd:boolean" wmsa:label="Show required instruction on bottom?"/>
+		<xsd:attribute name="SHOW_ADD_NEW_FORM" type="xsd:boolean" wmsa:tab="Child table" wmsa:label="Show add new form?"/>
+		<xsd:attribute name="SHOW_ADD_NEW_ROW" type="xsd:boolean" wmsa:tab="Child table" wmsa:label="Show add new row?"/>
+		<xsd:attribute name="HIDE_EMAIL_LINK" type="xsd:boolean" wmsa:label="Hide email link?"/>
+		<xsd:attribute name="HIDE_PRINT_LINK" type="xsd:boolean" wmsa:label="Hide print link?"/>
+		<xsd:attribute name="HIDE_HELP_LINK" type="xsd:boolean" wmsa:label="Hide help link?"/>
+		<xsd:attribute name="SHOW_CSV_LINK" type="xsd:boolean" wmsa:label="Show CSV link?"/>
+		<xsd:attribute name="SHOW_DELETE" type="xsd:boolean" wmsa:tab="Child table" wmsa:label="Show delete?"/>
+		<xsd:attribute name="SELECTEDTAB" type="xsd:string" wmsa:label="Selected tab"/>
+		<xsd:attribute name="FORMSUBMISSION" type="FORMSUBMISSIONType" wmsa:label="Form submission"/>
+		<xsd:attribute name="RECORDDISPLAYSTYLE" type="RECORDDISPLAYSTYLEType" wmsa:label="Record display style">
+			<xsd:annotation>
+				<xsd:documentation>Style of displaying a record, either as a table or form.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="SECURECONNECTION" type="SECURECONNECTIONType" wmsa:label="Secure (SSL) connection type"/>
+		<xsd:attribute name="FOCUSFIELD" type="xsd:string" wmsa:label="Focus field"/>
+		<xsd:attribute name="DEFAULTMENUACTION" type="xsd:string" wmsa:label="Default menu action"/>
+		<xsd:attribute name="ENABLECLIENTVALIDATION" type="xsd:boolean" wmsa:label="Do client validation?">
+			<xsd:annotation>
+				<xsd:documentation>A flag specifying whether the client should validate this form or not.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="FORMLANGType">
+		<xsd:attribute name="LOCALE" type="xsd:string" use="required" wmsa:label="Locale"/>
+		<xsd:attribute name="TITLE" type="xsd:string" wmsa:label="Title"/>
+		<xsd:attribute name="INSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Instruction"/>
+		<xsd:attribute name="ROWINSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Row instruction"/>
+		<xsd:attribute name="EMAILURL" type="xsd:string" wmsa:label="Email URL"/>
+		<xsd:attribute name="PRINTURL" type="xsd:string" wmsa:label="Print URL"/>
+		<xsd:attribute name="HELPURL" type="xsd:string" wmsa:label="Help URL"/>
+		<xsd:attribute name="CSVURL" type="xsd:string" wmsa:label="CSV URL"/>
+		<xsd:attribute name="XSLTNAME" type="xsd:string" wmsa:label="XSLT name"/>
+		<xsd:attribute name="EDITACTIONBARHTML" type="xsd:string" wmsa:height="4" wmsa:label="Edit action bar HTML"/>
+		<xsd:attribute name="TABLEACTIONBARHTML" type="xsd:string" wmsa:tab="Child table" wmsa:height="4" wmsa:label="Table action bar HTML"/>
+		<xsd:attribute name="CUSTOMACTIONHTML" type="xsd:string" wmsa:height="4" wmsa:label="Custom action HTML"/>
+		<xsd:attribute name="TABLEEMPTYMESSAGE" type="xsd:string" wmsa:tab="Child table" wmsa:label="Table empty message?"/>
+	</xsd:complexType>
+	<!-- Defines a SEARCH -->
+	<xsd:complexType name="SEARCHType">
+		<xsd:sequence>
+			<xsd:element name="SEARCHLANG" type="SEARCHLANGType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SECURITY" type="SEARCHSECURITYType" maxOccurs="unbounded"/>
+			<xsd:element name="SEARCHFIELD" type="FIELDType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SEARCHROWACTION" type="ACTIONType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SEARCHMENUACTION" type="ACTIONType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="SEARCHTABACTION" type="ACTIONType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="NAME" type="xsd:string" use="required" wmsa:label="Name"/>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="TITLE" type="xsd:string" wmsa:label="Title"/>
+		<xsd:attribute name="INSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Instruction"/>
+		<xsd:attribute name="RESULTINSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Result instruction"/>
+		<xsd:attribute name="RESULTTITLE" type="xsd:string" wmsa:label="Result title"/>
+		<xsd:attribute name="ALTERNATEJOIN" type="xsd:string" wmsa:tab="SQL" wmsa:height="4" wmsa:label="Alternate join"/>
+		<xsd:attribute name="ADDITIONALWHERECLAUSE" type="xsd:string" wmsa:tab="SQL" wmsa:height="4" wmsa:label="Additional where clause"/>
+		<xsd:attribute name="ORDERCLAUSE" type="xsd:string" wmsa:tab="SQL" wmsa:height="2" wmsa:label="Order clause"/>
+		<xsd:attribute name="GROUPCLAUSE" type="xsd:string" wmsa:tab="SQL" wmsa:height="2" wmsa:label="Group clause"/>
+		<xsd:attribute name="DISTINCT_ONLY" type="xsd:boolean" wmsa:tab="SQL" wmsa:label="Distinct rows only?"/>
+		<xsd:attribute name="SQLCOMMANDTIMEOUT" type="xsd:positiveInteger" wmsa:tab="SQL" wmsa:label="SQL timeout (in seconds)"/>
+		<xsd:attribute name="GRIDCOLUMNS" type="xsd:positiveInteger" wmsa:label="Grid columns"/>
+		<xsd:attribute name="FETCHSIZE" type="xsd:nonNegativeInteger" wmsa:label="Fetch size"/>
+		<xsd:attribute name="RESULTNAVIGATEURL" type="xsd:string" wmsa:label="Result navigate URL"/>
+		<xsd:attribute name="RESULTNAVIGATETABLE" type="xsd:string" wmsa:label="Result navigate table"/>
+		<xsd:attribute name="RESULTNAVIGATEFORM" type="xsd:string" wmsa:label="Result navigate form"/>
+		<xsd:attribute name="NEWURL" type="xsd:string" wmsa:label="New URL"/>
+		<xsd:attribute name="NEWTABLE" type="xsd:string" wmsa:label="New table"/>
+		<xsd:attribute name="NEWFORM" type="xsd:string" wmsa:label="New form"/>
+		<xsd:attribute name="SEARCHFORMTYPE" type="SEARCHFORMTYPEType" wmsa:label="Search form type"/>
+		<xsd:attribute name="SEARCHSUBMITURL" type="xsd:string" wmsa:label="Search submit URL"/>
+		<xsd:attribute name="SEARCHREQUESTURL" type="xsd:string" wmsa:label="Search request URL"/>
+		<xsd:attribute name="RESULTACTION" type="TABLEACTIONType" wmsa:label="Result action"/>
+		<xsd:attribute name="RESULTSUBMITURL" type="xsd:string" wmsa:label="Result submit URL"/>
+		<xsd:attribute name="RESULTEMPTYMESSAGE" type="xsd:string" wmsa:label="Result empty message"/>
+		<xsd:attribute name="NAVIGATECOLUMNNAME" type="xsd:string" wmsa:label="Navigate column name"/>
+		<xsd:attribute name="PRIMARYSEARCHCOLUMNNAME" type="xsd:string" wmsa:label="Primary search column name"/>
+		<xsd:attribute name="EMAILURL" type="xsd:string" wmsa:label="Email URL"/>
+		<xsd:attribute name="PRINTURL" type="xsd:string" wmsa:label="Print URL"/>
+		<xsd:attribute name="CSVURL" type="xsd:string" wmsa:label="CSV URL"/>
+		<xsd:attribute name="SEARCHFORMHELPURL" type="xsd:string" wmsa:label="Search form help URL"/>
+		<xsd:attribute name="SEARCHRESULTSHELPURL" type="xsd:string" wmsa:label="Search results help URL"/>
+		<xsd:attribute name="SEARCHACTIONBARHTML" type="xsd:string" wmsa:height="4" wmsa:label="Search action bar HTML"/>
+		<xsd:attribute name="RESULTACTIONBARHTML" type="xsd:string" wmsa:height="4" wmsa:label="Result action bar HTML"/>
+		<xsd:attribute name="CUSTOMACTIONHTML" type="xsd:string" wmsa:height="4" wmsa:label="Custom action HTML"/>
+		<xsd:attribute name="SHOW_SEARCH_PAGE_TOP" type="xsd:boolean" wmsa:label="Show search page on top?"/>
+		<xsd:attribute name="SHOW_SEARCH_PAGE_BOTTOM" type="xsd:boolean" wmsa:label="Show search page on bottom?"/>
+		<xsd:attribute name="EXCLUDE_COLUMNS_TITLES" type="xsd:boolean" wmsa:label="Exclude column titles?"/>
+		<xsd:attribute name="EXCLUDE_COLUMNS_TITLES_WHEN_EMPTY" type="xsd:boolean" wmsa:label="Exclude column titles when empty?"/>
+		<xsd:attribute name="SHOW_FETCH_NEXTN" type="xsd:boolean" wmsa:label="Show &quot;Next N&quot; buttons?"/>
+		<xsd:attribute name="SHOW_ACTIONS_MENU_TOP" type="xsd:boolean" wmsa:label="Show actions menu on top?"/>
+		<xsd:attribute name="SHOW_ACTIONS_MENU_BOTTOM" type="xsd:boolean" wmsa:label="Show actions menu on bottom?"/>
+		<xsd:attribute name="SHOW_ACTIONS_TAB" type="xsd:boolean" wmsa:label="Show actions tab?"/>
+		<xsd:attribute name="SHOW_SORT_COLUMNS" type="xsd:boolean" wmsa:label="Show sort columns?"/>
+		<xsd:attribute name="SHOW_REQUIRED_INSTRUCTION_TOP" type="xsd:boolean" wmsa:label="Show &quot;required&quot; instruction on top?"/>
+		<xsd:attribute name="SHOW_REQUIRED_INSTRUCTION_BOTTOM" type="xsd:boolean" wmsa:label="Show &quot;required&quot; instruction on bottom?"/>
+		<xsd:attribute name="HIDE_EMAIL_LINK" type="xsd:boolean" wmsa:label="Hide email link?"/>
+		<xsd:attribute name="HIDE_PRINT_LINK" type="xsd:boolean" wmsa:label="Hide print link?"/>
+		<xsd:attribute name="HIDE_HELP_LINK" type="xsd:boolean" wmsa:label="Hide help link?"/>
+		<xsd:attribute name="SHOW_CSV_LINK" type="xsd:boolean" wmsa:label="Show CSV link?"/>
+		<xsd:attribute name="NO_ADV_LINK" type="xsd:boolean" wmsa:label="Hide &quot;advanced&quot; link?"/>
+		<xsd:attribute name="XSLTNAME" type="xsd:string" wmsa:label="XSLT name"/>
+		<xsd:attribute name="HTMLGENERATORSERVER" type="xsd:string" wmsa:label="HTML generator server"/>
+		<xsd:attribute name="XMLGENERATORSERVER" type="xsd:string" wmsa:label="XML generator server"/>
+		<xsd:attribute name="COUNT_ROWS" type="xsd:boolean" wmsa:label="Count rows?"/>
+		<xsd:attribute name="NAVIGATE_FKEY_POPUP" type="xsd:boolean" wmsa:label="Navigate FKey popup?"/>
+		<xsd:attribute name="SEARCHRULESSERVER" type="xsd:string" wmsa:label="Search rules server"/>
+		<xsd:attribute name="SHOW_ADD_NEW_FORM" type="xsd:boolean" wmsa:label="Show add new form?"/>
+		<xsd:attribute name="AUTO_EXECUTE" type="xsd:boolean" wmsa:label="Auto execute?"/>
+		<xsd:attribute name="SINGLE_ROW_SELECTION" type="xsd:boolean" wmsa:label="Single row selection?"/>
+		<xsd:attribute name="REMEMBER_SEARCH_VALUES" type="xsd:boolean" wmsa:label="Remember search values?"/>
+		<xsd:attribute name="SELECTEDTAB" type="xsd:string" wmsa:label="Selected tab"/>
+		<xsd:attribute name="SEARCHSUBMISSION" type="SEARCHSUBMISSIONType" wmsa:label="Search submission"/>
+		<xsd:attribute name="SECURECONNECTION" type="SECURECONNECTIONType" wmsa:label="Secure (SSL) connection type"/>
+		<xsd:attribute name="FOCUSFIELD" type="xsd:string" wmsa:label="Focus field"/>
+		<xsd:attribute name="DEFAULTMENUACTION" type="xsd:string" wmsa:label="Default menu action"/>
+		<xsd:attribute name="ENABLECLIENTVALIDATION" type="xsd:boolean" wmsa:label="Do client validation?">
+			<xsd:annotation>
+				<xsd:documentation>A flag specifying whether the client should validate this form or not.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="SEARCHLANGType">
+		<xsd:attribute name="LOCALE" type="xsd:string" use="required" wmsa:label="Locale"/>
+		<xsd:attribute name="TITLE" type="xsd:string" wmsa:label="Title"/>
+		<xsd:attribute name="INSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Instruction"/>
+		<xsd:attribute name="RESULTINSTRUCTION" type="xsd:string" wmsa:height="4" wmsa:label="Result instruction"/>
+		<xsd:attribute name="RESULTTITLE" type="xsd:string" wmsa:label="Result title"/>
+		<xsd:attribute name="RESULTEMPTYMESSAGE" type="xsd:string" wmsa:label="Result empty message"/>
+		<xsd:attribute name="EMAILURL" type="xsd:string" wmsa:label="Email URL"/>
+		<xsd:attribute name="PRINTURL" type="xsd:string" wmsa:label="Print URL"/>
+		<xsd:attribute name="CSVURL" type="xsd:string" wmsa:label="CSV URL"/>
+		<xsd:attribute name="SEARCHFORMHELPURL" type="xsd:string" wmsa:label="Search form help URL"/>
+		<xsd:attribute name="SEARCHRESULTSHELPURL" type="xsd:string" wmsa:label="Search results help URL"/>
+		<xsd:attribute name="XSLTNAME" type="xsd:string" wmsa:label="XSLT name"/>
+		<xsd:attribute name="SEARCHACTIONBARHTML" type="xsd:string" wmsa:height="4" wmsa:label="Search action bar HTML"/>
+		<xsd:attribute name="RESULTACTIONBARHTML" type="xsd:string" wmsa:height="4" wmsa:label="Result action bar HTML"/>
+		<xsd:attribute name="CUSTOMACTIONHTML" type="xsd:string" wmsa:height="4" wmsa:label="Custom action HTML"/>
+	</xsd:complexType>
+	<!-- Defines a TABLE -->
+	<xsd:complexType name="TABLEType">
+		<xsd:sequence>
+			<xsd:element name="TABLELANG" type="TABLELANGType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="FIELD" type="FIELDType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="ACTION" type="ACTIONType" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element name="FORM" type="FORMType" minOccurs="0" maxOccurs="unbounded">
+				<!-- Keys defined for uniqueness.  Need to look into xsd:unique. -->
+				<xsd:key name="FormFieldKey">
+					<xsd:selector xpath="FORMFIELD" />
+					<xsd:field xpath="@NAME"/>
+				</xsd:key>
+				<xsd:key name="FormRowActionKey">
+					<xsd:selector xpath="FORMROWACTION" />
+					<xsd:field xpath="@NAME" />
+				</xsd:key>
+				<xsd:key name="FormMenuActionKey">
+					<xsd:selector xpath="FORMMENUACTION" />
+					<xsd:field xpath="@NAME"/>
+				</xsd:key>
+				<xsd:key name="FormTabActionKey">
+					<xsd:selector xpath="FORMTABACTION" />
+					<xsd:field xpath="@NAME"/>
+				</xsd:key>
+				<xsd:key name="LinkedRecordKey">
+					<xsd:selector xpath="LINKEDFORM" />
+					<xsd:field xpath="@FORMNAME"/>
+					<xsd:field xpath="@TABLENAME" />
+				</xsd:key>
+			</xsd:element>
+			<xsd:element name="SEARCH" type="SEARCHType" minOccurs="0" maxOccurs="unbounded">
+				<!-- Keys defined for uniqueness.  Need to look into xsd:unique. -->
+				<xsd:key name="SearchFieldKey">
+					<xsd:selector xpath="SEARCHFIELD" />
+					<xsd:field xpath="@NAME"/>
+				</xsd:key>
+				<xsd:key name="SearchRowActionKey">
+					<xsd:selector xpath="SEARCHROWACTION" />
+					<xsd:field xpath="@NAME" />
+				</xsd:key>
+				<xsd:key name="SearchMenuActionKey">
+					<xsd:selector xpath="SEARCHMENUACTION" />
+					<xsd:field xpath="@NAME"/>
+				</xsd:key>
+				<xsd:key name="SearchTabAction">
+					<xsd:selector xpath="SEARCHTABACTION" />
+					<xsd:field xpath="@NAME"/>
+				</xsd:key>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="NAME" type="xsd:string" use="required" wmsa:label="Name"/>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="DBTABLENAME" type="xsd:string" wmsa:label="DB table name"/>
+		<xsd:attribute name="PRIMARYKEYCOLNAME" type="xsd:string" wmsa:label="Primary key column name"/>
+		<xsd:attribute name="PRIMARYVALUECOLNAME" type="xsd:string" wmsa:label="Primary value column name"/>
+		<xsd:attribute name="DBTABLETYPE" type="DBTABLETYPEType" wmsa:label="DB table type"/>
+		<xsd:attribute name="PRIMARYKEYTYPE" type="PRIMARYKEYTYPEType" wmsa:label="Primary key type"/>
+		<xsd:attribute name="BUSINESSRULESSERVER" type="xsd:string" wmsa:label="Business rules server"/>
+		<xsd:attribute name="SEARCHRULESSERVER" type="xsd:string" wmsa:label="Search rules server"/>
+		<xsd:attribute name="HTMLGENERATORSERVER" type="xsd:string" wmsa:label="HTML generator server"/>
+		<xsd:attribute name="XMLGENERATORSERVER" type="xsd:string" wmsa:label="XML generator server"/>
+		<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+		<xsd:attribute name="ORACLESEQUENCENAME" type="xsd:string" wmsa:label="Oracle sequence name"/>
+		<xsd:attribute name="ATTACHMENT" type="xsd:boolean" wmsa:label="Is an attachment?"/>
+		<xsd:attribute name="READONLY" type="xsd:boolean" wmsa:label="Is read-only?"/>
+		<xsd:attribute name="FK_SUGGESTSEARCH" type="xsd:string" wmsa:label="The Default Search that should be used for all fields that use this table as FK" />
+	</xsd:complexType>
+	<xsd:complexType name="TABLELANGType">
+		<xsd:attribute name="LOCALE" type="xsd:string" use="required" wmsa:label="Locale"/>
+		<xsd:attribute name="CONNECTIONSTRING" type="xsd:string" wmsa:label="Connection string"/>
+	</xsd:complexType>
+	<!-- Defines a LINKEDFORM -->
+	<xsd:complexType name="LINKEDFORMType">
+		<xsd:attribute name="TABLENAME" type="xsd:string" wmsa:label="Table name"/>
+		<xsd:attribute name="FORMNAME" type="xsd:string" wmsa:label="Form name"/>
+		<xsd:attribute name="FOREIGNKEYCOLUMN" type="xsd:string" wmsa:label="Foreign key column"/>
+	</xsd:complexType>
+	<!-- Defines SECURITY node of a SEARCH -->
+	<xsd:complexType name="SEARCHSECURITYType">
+		<xsd:sequence>
+			<xsd:element name="PRIV" type="PRIVType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="ACTION" use="required" wmsa:label="Action">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="ActionAny"/>
+					<xsd:enumeration value="ActionSearchDisplay"/>
+					<xsd:enumeration value="ActionSearchExecute"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="ALLOWANY" type="xsd:boolean" wmsa:label="Always allow this action?"/>
+	</xsd:complexType>
+	<!-- Defines SECURITY node of a FORM -->
+	<xsd:complexType name="FORMSECURITYType">
+		<xsd:sequence>
+			<xsd:element name="PRIV" type="PRIVType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="ACTION" use="required" wmsa:label="Action">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="ActionAny"/>
+					<xsd:enumeration value="ActionRecordCreate"/>
+					<xsd:enumeration value="ActionRecordRead"/>
+					<xsd:enumeration value="ActionRecordUpdate"/>
+					<xsd:enumeration value="ActionRecordDelete"/>
+					<xsd:enumeration value="ActionRecordDisplay"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="ALLOWANY" type="xsd:boolean" wmsa:label="Always allow this action?"/>
+	</xsd:complexType>
+	<!-- Defines SECURITY node of a FIELD -->
+	<xsd:complexType name="FIELDSECURITYType">
+		<xsd:sequence>
+			<xsd:element name="PRIV" type="PRIVType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="ACTION" use="required" wmsa:label="Action">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="ActionAny"/>
+					<xsd:enumeration value="ActionFieldDisplay"/>
+					<xsd:enumeration value="ActionFieldModify"/>
+					<xsd:enumeration value="ActionFieldSearch"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="ALLOWANY" type="xsd:boolean" wmsa:label="Always allow this action?"/>
+	</xsd:complexType>
+	<!-- Defines SECURITY node of an ACTION -->
+	<xsd:complexType name="ACTIONSECURITYType">
+		<xsd:sequence>
+			<xsd:element name="PRIV" type="PRIVType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attribute name="ACTION" use="required" wmsa:label="Action">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="ActionAny"/>
+					<xsd:enumeration value="ActionActionDisplay"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="COMMENT" type="xsd:string" wmsa:height="4" wmsa:label="Comment"/>
+		<xsd:attribute name="ALLOWANY" type="xsd:boolean" wmsa:label="Always allow this action?"/>
+	</xsd:complexType>
+	<!-- Defines the PRIV node of other SECURITY nodes -->
+	<xsd:complexType name="PRIVType">
+		<xsd:attribute name="FIELD1" type="xsd:string" wmsa:label="Field 1"/>
+		<xsd:attribute name="OP" use="required" wmsa:label="Operator">
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="OpEquals"/>
+					<xsd:enumeration value="OpDoesNotEqual"/>
+					<xsd:enumeration value="OpIsLessThan"/>
+					<xsd:enumeration value="OpIsGreaterThan"/>
+					<xsd:enumeration value="OpIsLessThanOrEqualTo"/>
+					<xsd:enumeration value="OpIsGreaterThanOrEqualTo"/>
+					<xsd:enumeration value="OpContains"/>
+					<xsd:enumeration value="OpDoesNotContain"/>
+					<xsd:enumeration value="OpIsEmpty"/>
+					<xsd:enumeration value="OpIsNotEmpty"/>
+					<xsd:enumeration value="OpIsInRole"/>
+					<xsd:enumeration value="OpIsNotInRole"/>
+					<xsd:enumeration value="OpIsAuthenticated"/>
+					<xsd:enumeration value="OpIsNotAuthenticated"/>
+					<xsd:enumeration value="OpHasPrivilege"/>
+					<xsd:enumeration value="OpDoesNotHavePrivilege"/>
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="FIELD2" type="xsd:string" wmsa:label="Field 2"/>
+		<xsd:attribute name="VALUE" type="xsd:string" wmsa:label="Value"/>
+	</xsd:complexType>
+	<!-- Defines the possible values of the FIELDSOURCE or FIELDTARGET attributes (in FIELD element) -->
+	<xsd:simpleType name="FIELDSOURCETARGETType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="FieldSourceDatabase"/>
+			<xsd:enumeration value="FieldSourceProfile"/>
+			<xsd:enumeration value="FieldSourceConstant"/>
+			<xsd:enumeration value="FieldSourceExternal"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines the possible values of the VALIDVALUESTYPE attribute (in FIELD element) -->
+	<xsd:simpleType name="VALIDVALUESTYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="FieldValidValuesTypeDefaultSql"/>
+			<xsd:enumeration value="FieldValidValuesTypeCustomSql"/>
+			<xsd:enumeration value="FieldValidValuesTypeList"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines the possible values of the DEFAULTTYPE attribute (in FIELD element) -->
+	<xsd:simpleType name="DEFAULTTYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="FieldDefaultTypeNone"/>
+			<xsd:enumeration value="FieldDefaultTypeConstant"/>
+			<xsd:enumeration value="FieldDefaultTypeProfile"/>
+			<xsd:enumeration value="FieldDefaultTypeDefaultSql"/>
+			<xsd:enumeration value="FieldDefaultTypeCustomSql"/>
+			<xsd:enumeration value="FieldDefaultTypeExternal"/>
+			<xsd:enumeration value="FieldDefaultTypeToday"/>
+			<xsd:enumeration value="FieldDefaultTypeNow"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of FIELDTYPE (in FIELD element) -->
+	<xsd:simpleType name="FIELDTYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="FieldTypeBirthDate"/>
+			<xsd:enumeration value="FieldTypeBLOB"/>
+			<xsd:enumeration value="FieldTypeBoolean"/>
+			<xsd:enumeration value="FieldTypeCLOB"/>
+			<xsd:enumeration value="FieldTypeCurrency"/>
+			<xsd:enumeration value="FieldTypeDate"/>
+			<xsd:enumeration value="FieldTypeDateTime"/>
+			<xsd:enumeration value="FieldTypeDivider"/>
+			<xsd:enumeration value="FieldTypeDividerLabel"/>
+			<xsd:enumeration value="FieldTypeEmail"/>
+			<xsd:enumeration value="FieldTypeFile"/>
+			<xsd:enumeration value="FieldTypeForeignKey"/>
+			<xsd:enumeration value="FieldTypeHTML"/>
+			<xsd:enumeration value="FieldTypeInteger"/>
+			<xsd:enumeration value="FieldTypeLongVarchar"/>
+			<xsd:enumeration value="FieldTypeMultiLine"/>
+			<xsd:enumeration value="FieldTypeNCLOB"/>
+			<xsd:enumeration value="FieldTypeNText"/>
+			<xsd:enumeration value="FieldTypeNumber"/>
+			<xsd:enumeration value="FieldTypeOracleLastModified"/>
+			<xsd:enumeration value="FieldTypeOracleRowID"/>
+			<xsd:enumeration value="FieldTypeOracleSequence"/>
+			<xsd:enumeration value="FieldTypePassword"/>
+			<xsd:enumeration value="FieldTypePath"/>
+			<xsd:enumeration value="FieldTypePercent"/>
+			<xsd:enumeration value="FieldTypePhone"/>
+			<xsd:enumeration value="FieldTypeSQLServerIdentity"/>
+			<xsd:enumeration value="FieldTypeSQLServerLastModified"/>
+			<xsd:enumeration value="FieldTypeSQLServerTimeStamp"/>
+			<xsd:enumeration value="FieldTypeSSN"/>
+			<xsd:enumeration value="FieldTypeState"/>
+			<xsd:enumeration value="FieldTypeTime"/>
+			<xsd:enumeration value="FieldTypeText"/>
+			<xsd:enumeration value="FieldTypeURL"/>
+			<xsd:enumeration value="FieldTypeUserID"/>
+			<xsd:enumeration value="FieldTypeUTCDateTime"/>
+			<xsd:enumeration value="FieldTypeValidValues"/>
+			<xsd:enumeration value="FieldTypeVarchar"/>
+			<xsd:enumeration value="FieldTypeXML"/>
+			<xsd:enumeration value="FieldTypeZipCode"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of SEARCHTYPE (in FIELD element) -->
+	<xsd:simpleType name="SEARCHTYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="FieldSearchTypeEqual"/>
+			<xsd:enumeration value="FieldSearchTypeBeginsWith"/>
+			<xsd:enumeration value="FieldSearchTypeGreater"/>
+			<xsd:enumeration value="FieldSearchTypeGreaterOrEqual"/>
+			<xsd:enumeration value="FieldSearchTypeSmaller"/>
+			<xsd:enumeration value="FieldSearchTypeSmallerOrEqual"/>
+			<xsd:enumeration value="FieldSearchTypeBetween"/>
+			<xsd:enumeration value="FieldSearchTypeSoundex"/>
+			<xsd:enumeration value="FieldSearchTypeContains"/>
+			<xsd:enumeration value="FieldSearchTypeSoundsOrBegins"/>
+			<xsd:enumeration value="FieldSearchTypeWordBeginsWith"/>
+			<xsd:enumeration value="FieldSearchTypeIn"/>
+			<xsd:enumeration value="FieldSearchTypeNotIn"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of FKVALIDATETYPE (in FIELD element) -->
+	<xsd:simpleType name="FKVALIDATETYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="FieldFKValidateTypeBeginsWith"/>
+			<xsd:enumeration value="FieldFKValidateTypeEqual"/>
+			<xsd:enumeration value="FieldFKValidateTypeContains"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of TABINDEX (in ACTION, FIELD, and FORM elements)  -->
+	<xsd:simpleType name="TABINDEXType">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="32767"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of CACHEMINUTES (in FIELD element)  -->
+	<xsd:simpleType name="CACHEMINUTESType">
+		<xsd:restriction base="xsd:double">
+			<xsd:minInclusive value="0.0"/>
+			<xsd:maxInclusive value="525599.0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of TABLEACTION (in FORM element) and RESULTACTION (in SEARCH element) -->
+	<xsd:simpleType name="TABLEACTIONType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="NoAction"/>
+			<xsd:enumeration value="SingleChoice"/>
+			<xsd:enumeration value="MultiChoice"/>
+			<xsd:enumeration value="Navigate"/>
+			<xsd:enumeration value="Qualifier"/>
+			<xsd:enumeration value="Custom"/>
+			<xsd:enumeration value="PopupEdit"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of SEARCHFORMTYPE (in SEARCH element) -->
+	<xsd:simpleType name="SEARCHFORMTYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="Advanced"/>
+			<xsd:enumeration value="Basic"/>
+			<xsd:enumeration value="Link"/>
+			<xsd:enumeration value="None"/>
+			<xsd:enumeration value="Rolodex"/>
+			<xsd:enumeration value="Filter"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of DBTABLETYPE (in TABLE element) -->
+	<xsd:simpleType name="DBTABLETYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="DBTableTypeTable">
+				<xsd:annotation>
+					<xsd:documentation>A table in the database.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DBTableTypeView">
+				<xsd:annotation>
+					<xsd:documentation>A view in the database.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DBTableTypeSQLServerTableValuedFunction">
+				<xsd:annotation>
+					<xsd:documentation>A table valued function in the SQL Server database.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of PRIMARYKEYTYPE (in TABLE element) -->
+	<xsd:simpleType name="PRIMARYKEYTYPEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="PKeyNone">
+				<xsd:annotation>
+					<xsd:documentation>No primary key.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PKeyCustom">
+				<xsd:annotation>
+					<xsd:documentation>The primary key is created by the application.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PKeySQLServerIdentity">
+				<xsd:annotation>
+					<xsd:documentation>The primary key is handled by SQL Server as an IDENTITY field.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PKeySQLServerTrigger">
+				<xsd:annotation>
+					<xsd:documentation>The primary key is created by SQL Server as a field which is set by an insert trigger on the table.  The trigger must return the primary key value of the new row.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PKeySQLServerCalculated">
+				<xsd:annotation>
+					<xsd:documentation>The primary key is handled by SQL Server as a field whose value is calculated when the record is inserted.  (The value is retrieved before any trigger is executed.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="PKeyOracleSequence">
+				<xsd:annotation>
+					<xsd:documentation>The primary key is handled by Oracle using a specially named SEQUENCE.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of FK_*ACCESSKEY (in FIELD element) -->
+	<xsd:simpleType name="ACCESSKEYType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="A"/>
+			<xsd:enumeration value="B"/>
+			<xsd:enumeration value="C"/>
+			<xsd:enumeration value="D"/>
+			<xsd:enumeration value="E"/>
+			<xsd:enumeration value="F"/>
+			<xsd:enumeration value="G"/>
+			<xsd:enumeration value="H"/>
+			<xsd:enumeration value="I"/>
+			<xsd:enumeration value="J"/>
+			<xsd:enumeration value="K"/>
+			<xsd:enumeration value="L"/>
+			<xsd:enumeration value="M"/>
+			<xsd:enumeration value="N"/>
+			<xsd:enumeration value="O"/>
+			<xsd:enumeration value="P"/>
+			<xsd:enumeration value="Q"/>
+			<xsd:enumeration value="R"/>
+			<xsd:enumeration value="S"/>
+			<xsd:enumeration value="T"/>
+			<xsd:enumeration value="U"/>
+			<xsd:enumeration value="V"/>
+			<xsd:enumeration value="W"/>
+			<xsd:enumeration value="X"/>
+			<xsd:enumeration value="Y"/>
+			<xsd:enumeration value="Z"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of RECORDDISPLAYSTYLE (in FORM element) -->
+	<xsd:simpleType name="RECORDDISPLAYSTYLEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="UseDefault">
+				<xsd:annotation>
+					<xsd:documentation>Display the record as a form for parent records (non-linked records) or as rows in a table (for linked records.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DisplayAsForm">
+				<xsd:annotation>
+					<xsd:documentation>Display the linked record set as a form (or list of forms), not as rows in a table.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DisplayAsTable">
+				<xsd:annotation>
+					<xsd:documentation>Display the linked record set as rows in a table, rather than as a form (or list of forms.)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of TABLECOLLAPSESTATE (in FORM element) -->
+	<xsd:simpleType name="TABLECOLLAPSESTATEType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="NotCollapsible">
+				<xsd:annotation>
+					<xsd:documentation>Table is not collapsible</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Collapsed">
+				<xsd:annotation>
+					<xsd:documentation>Table is collapsible and starts collapsed</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Expanded">
+				<xsd:annotation>
+					<xsd:documentation>Table is collapsible and starts expanded</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of FORMSUBMISSION (in FORM element) -->
+	<xsd:simpleType name="FORMSUBMISSIONType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="UseDefault"/>
+			<xsd:enumeration value="NewFormSubmission"/>
+			<xsd:enumeration value="UseParentFormSubmission"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of SEARCHSUBMISSION (in SEARCH element) -->
+	<xsd:simpleType name="SEARCHSUBMISSIONType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="UseDefault"/>
+			<xsd:enumeration value="NewSearchSubmission"/>
+			<xsd:enumeration value="UseParentSearchSubmission"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines possible values of SEARCHSUBMISSION (in SEARCH, FORM, and ACTION elements) -->
+	<xsd:simpleType name="SECURECONNECTIONType">
+		<xsd:restriction base="xsd:NMTOKEN">
+			<xsd:enumeration value="KeepDefault"/>
+			<xsd:enumeration value="RequireSSL"/>
+			<xsd:enumeration value="RequireNoSSL"/>
+			<xsd:enumeration value="KeepCurrent"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<!-- Defines individual types of actions.  Not used directly, but combined into ACTIONACTIONType -->
+	<xsd:simpleType name="SEARCHACTIONType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Query"/>
+			<xsd:enumeration value="Search"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="FORMACTIONType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="New"/>
+			<xsd:enumeration value="Open"/>
+			<xsd:enumeration value="Save"/>
+			<xsd:enumeration value="SaveNew"/>
+			<xsd:enumeration value="Delete"/>
+			<xsd:enumeration value="Redisplay"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="OTHERACTIONType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Report"/>
+			<xsd:enumeration value="Display"/>
+			<xsd:enumeration value="GetFile"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="CUSTOMACTIONType">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<!-- Defines suggested values of ACTION (in ACTION element) as a combination of all other action types -->
+	<xsd:simpleType name="ACTIONACTIONType">
+		<xsd:union memberTypes="SEARCHACTIONType FORMACTIONType OTHERACTIONType CUSTOMACTIONType"/>
+	</xsd:simpleType>
+</xsd:schema>
